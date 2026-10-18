@@ -16,6 +16,8 @@ import { Route as ShellCreateRouteImport } from './routes/_shell/create'
 import { Route as ShellDownloadsRouteImport } from './routes/_shell/downloads'
 import { Route as ShellJavaRouteImport } from './routes/_shell/java'
 import { Route as ShellSettingsRouteImport } from './routes/_shell/settings'
+import { Route as ShellPlayIndexRouteImport } from './routes/_shell/play/index'
+import { Route as ShellPlayPlayIdRouteImport } from './routes/_shell/play/$playId'
 import { Route as ShellServersIndexRouteImport } from './routes/_shell/servers/index'
 import { Route as ShellServersServerIdRouteImport } from './routes/_shell/servers/$serverId'
 
@@ -53,6 +55,16 @@ const ShellSettingsRoute = ShellSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => ShellRoute,
 } as any)
+const ShellPlayIndexRoute = ShellPlayIndexRouteImport.update({
+  id: '/play/',
+  path: '/play/',
+  getParentRoute: () => ShellRoute,
+} as any)
+const ShellPlayPlayIdRoute = ShellPlayPlayIdRouteImport.update({
+  id: '/play/$playId',
+  path: '/play/$playId',
+  getParentRoute: () => ShellRoute,
+} as any)
 const ShellServersIndexRoute = ShellServersIndexRouteImport.update({
   id: '/servers/',
   path: '/servers/',
@@ -71,7 +83,9 @@ export interface FileRoutesByFullPath {
   '/downloads': typeof ShellDownloadsRoute
   '/java': typeof ShellJavaRoute
   '/settings': typeof ShellSettingsRoute
+  '/play/$playId': typeof ShellPlayPlayIdRoute
   '/servers/$serverId': typeof ShellServersServerIdRoute
+  '/play/': typeof ShellPlayIndexRoute
   '/servers/': typeof ShellServersIndexRoute
 }
 export interface FileRoutesByTo {
@@ -81,7 +95,9 @@ export interface FileRoutesByTo {
   '/java': typeof ShellJavaRoute
   '/settings': typeof ShellSettingsRoute
   '/': typeof ShellIndexRoute
+  '/play/$playId': typeof ShellPlayPlayIdRoute
   '/servers/$serverId': typeof ShellServersServerIdRoute
+  '/play': typeof ShellPlayIndexRoute
   '/servers': typeof ShellServersIndexRoute
 }
 export interface FileRoutesById {
@@ -93,7 +109,9 @@ export interface FileRoutesById {
   '/_shell/java': typeof ShellJavaRoute
   '/_shell/settings': typeof ShellSettingsRoute
   '/_shell/': typeof ShellIndexRoute
+  '/_shell/play/$playId': typeof ShellPlayPlayIdRoute
   '/_shell/servers/$serverId': typeof ShellServersServerIdRoute
+  '/_shell/play/': typeof ShellPlayIndexRoute
   '/_shell/servers/': typeof ShellServersIndexRoute
 }
 export interface FileRouteTypes {
@@ -105,7 +123,9 @@ export interface FileRouteTypes {
     | '/downloads'
     | '/java'
     | '/settings'
+    | '/play/$playId'
     | '/servers/$serverId'
+    | '/play/'
     | '/servers/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -115,7 +135,9 @@ export interface FileRouteTypes {
     | '/java'
     | '/settings'
     | '/'
+    | '/play/$playId'
     | '/servers/$serverId'
+    | '/play'
     | '/servers'
   id:
     | '__root__'
@@ -126,7 +148,9 @@ export interface FileRouteTypes {
     | '/_shell/java'
     | '/_shell/settings'
     | '/_shell/'
+    | '/_shell/play/$playId'
     | '/_shell/servers/$serverId'
+    | '/_shell/play/'
     | '/_shell/servers/'
   fileRoutesById: FileRoutesById
 }
@@ -185,6 +209,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ShellSettingsRouteImport
       parentRoute: typeof ShellRoute
     }
+    '/_shell/play/': {
+      id: '/_shell/play/'
+      path: '/play'
+      fullPath: '/play/'
+      preLoaderRoute: typeof ShellPlayIndexRouteImport
+      parentRoute: typeof ShellRoute
+    }
+    '/_shell/play/$playId': {
+      id: '/_shell/play/$playId'
+      path: '/play/$playId'
+      fullPath: '/play/$playId'
+      preLoaderRoute: typeof ShellPlayPlayIdRouteImport
+      parentRoute: typeof ShellRoute
+    }
     '/_shell/servers/': {
       id: '/_shell/servers/'
       path: '/servers'
@@ -209,7 +247,9 @@ interface ShellRouteChildren {
   ShellJavaRoute: typeof ShellJavaRoute
   ShellSettingsRoute: typeof ShellSettingsRoute
   ShellIndexRoute: typeof ShellIndexRoute
+  ShellPlayPlayIdRoute: typeof ShellPlayPlayIdRoute
   ShellServersServerIdRoute: typeof ShellServersServerIdRoute
+  ShellPlayIndexRoute: typeof ShellPlayIndexRoute
   ShellServersIndexRoute: typeof ShellServersIndexRoute
 }
 
@@ -220,7 +260,9 @@ const ShellRouteChildren: ShellRouteChildren = {
   ShellJavaRoute: ShellJavaRoute,
   ShellSettingsRoute: ShellSettingsRoute,
   ShellIndexRoute: ShellIndexRoute,
+  ShellPlayPlayIdRoute: ShellPlayPlayIdRoute,
   ShellServersServerIdRoute: ShellServersServerIdRoute,
+  ShellPlayIndexRoute: ShellPlayIndexRoute,
   ShellServersIndexRoute: ShellServersIndexRoute,
 }
 

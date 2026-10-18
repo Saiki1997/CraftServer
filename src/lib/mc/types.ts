@@ -83,6 +83,7 @@ export type InstallPlan = {
   builds: { windows?: RuntimeAsset; linux?: RuntimeAsset; mac?: RuntimeAsset };
   loader: { url?: string; filename: string; note: string };
   vanilla?: RuntimeAsset;
+  client?: RuntimeAsset;
   verifiedAt: number;
 };
 
@@ -175,6 +176,36 @@ export type ServerRecord = {
   queuedCommands: string[];
   backups: BackupSnap[];
   removedClientByDefault: boolean;
+};
+
+export type PlayRecord = {
+  id: string;
+  name: string;
+  createdAt: number;
+  updatedAt: number;
+  lastPlayed: number | null;
+  directoryLabel: string;
+  pack: DetectedPack;
+  minecraftVersion: string;
+  loader: LoaderKind;
+  loaderVersion: string;
+  javaMajor: number;
+  javaSource: DetectedPack["javaSource"];
+  javaNote: string;
+  runtimeId: string | null;
+  manualJavaPath: string;
+  ramMinMb: number;
+  ramMaxMb: number;
+  width: number;
+  height: number;
+  extraJvm: string;
+  gc: "g1" | "default";
+  files: PackFile[];
+  installStages: InstallStage[];
+  installError?: string;
+  installedAt?: number;
+  plan?: InstallPlan;
+  console: LogLine[];
 };
 
 export type RuntimeRecord = {

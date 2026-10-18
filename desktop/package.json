@@ -1,9 +1,9 @@
 {
   "name": "craftserver",
   "productName": "CraftServer",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "type": "module",
   "main": "main.mjs",
-  "description": "Portable Minecraft server folder builder."
+  "description": "Play a modpack or host it as a Minecraft server folder."
 }

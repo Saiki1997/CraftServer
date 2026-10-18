@@ -13,7 +13,7 @@ function excerpt(s: string | undefined, n = 280): string {
   return clean.length > n ? `${clean.slice(0, n - 1)}…` : clean;
 }
 
-async function mojangJava(version: string): Promise<{ major?: number; vanilla?: RuntimeAsset }> {
+async function mojangJava(version: string): Promise<{ major?: number; vanilla?: RuntimeAsset; client?: RuntimeAsset }> {
   try {
     const manifest = await getJson<{ versions: { id: string; url: string }[] }>(
       "https://launchermeta.mojang.com/mc/game/version_manifest_v2.json",
@@ -22,13 +22,20 @@ async function mojangJava(version: string): Promise<{ major?: number; vanilla?: 
     if (!hit) return {};
     const meta = await getJson<{
       javaVersion?: { majorVersion?: number };
-      downloads?: { server?: { url: string; sha1: string; size: number } };
+      downloads?: {
+        server?: { url: string; sha1: string; size: number };
+        client?: { url: string; sha1: string; size: number };
+      };
     }>(hit.url);
     const server = meta.downloads?.server;
+    const client = meta.downloads?.client;
     return {
       major: meta.javaVersion?.majorVersion,
       vanilla: server
         ? { url: server.url, filename: "server.jar", checksum: server.sha1, size: server.size }
+        : undefined,
+      client: client
+        ? { url: client.url, filename: "client.jar", checksum: client.sha1, size: client.size }
         : undefined,
     };
   } catch {
@@ -829,6 +836,7 @@ export async function resolvePlan(input: {
     builds: { windows, linux, mac },
     loader,
     vanilla: mojang.vanilla,
+    client: mojang.client,
     verifiedAt: Date.now(),
   };
 }

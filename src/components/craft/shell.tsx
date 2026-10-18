@@ -1,5 +1,5 @@
 import { Link, Outlet, useRouterState } from "@tanstack/react-router";
-import { Archive, Cpu, Download, LayoutDashboard, Plus, Server, Settings } from "lucide-react";
+import { Archive, Cpu, Download, Gamepad2, LayoutDashboard, Plus, Server, Settings } from "lucide-react";
 import { useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useCraft } from "@/lib/mc/store";
@@ -7,7 +7,8 @@ import { useCraft } from "@/lib/mc/store";
 const NAV = [
   { to: "/", label: "Home", icon: LayoutDashboard },
   { to: "/create", label: "Install", icon: Plus },
-  { to: "/servers", label: "Servers", icon: Server },
+  { to: "/play", label: "Play", icon: Gamepad2 },
+  { to: "/servers", label: "Host", icon: Server },
   { to: "/downloads", label: "Downloads", icon: Download },
   { to: "/java", label: "Java", icon: Cpu },
   { to: "/backups", label: "Backups", icon: Archive },
@@ -33,8 +34,8 @@ export function Shell() {
           <Link to="/" className="flex items-center gap-3">
             <img src="/mark.jpg" alt="" className="size-9 rounded-md object-cover" />
             <span>
-              <span className="block text-sm font-medium tracking-tight">CraftServer</span>
-              <span className="block text-xs text-muted">One-click servers</span>
+              <span className="block text-sm font-medium tracking-tight">Craft</span>
+              <span className="block text-xs text-muted">Play or host</span>
             </span>
           </Link>
         </div>

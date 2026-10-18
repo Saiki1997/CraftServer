@@ -1,6 +1,6 @@
 import { recommendRam } from "./recommend.ts";
 import { freshStages, slugName } from "./store.ts";
-import type { DetectedPack, ServerRecord } from "./types.ts";
+import type { DetectedPack, PlayRecord, ServerRecord } from "./types.ts";
 
 export function makeServer(
   pack: DetectedPack,
@@ -58,5 +58,39 @@ export function makeServer(
     queuedCommands: [],
     backups: [],
     removedClientByDefault: input.excludeClient,
+  };
+}
+
+export function makePlay(
+  pack: DetectedPack,
+  input: { name: string; ramMinMb: number; ramMaxMb: number },
+): PlayRecord {
+  const advice = recommendRam(pack.files, pack.minecraftVersion);
+  const id = crypto.randomUUID();
+  return {
+    id,
+    name: input.name.trim() || pack.name,
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+    lastPlayed: null,
+    directoryLabel: `play/${slugName(input.name || pack.name)}-${id.slice(0, 6)}`,
+    pack,
+    minecraftVersion: pack.minecraftVersion,
+    loader: pack.loader,
+    loaderVersion: pack.loaderVersion,
+    javaMajor: pack.javaMajor,
+    javaSource: pack.javaSource,
+    javaNote: pack.javaNote,
+    runtimeId: null,
+    manualJavaPath: "",
+    ramMinMb: input.ramMinMb || advice.minMb,
+    ramMaxMb: input.ramMaxMb || advice.maxMb,
+    width: 1280,
+    height: 720,
+    extraJvm: "",
+    gc: "default",
+    files: pack.files.map((file) => ({ ...file, included: !file.serverOnly })),
+    installStages: freshStages(),
+    console: [],
   };
 }

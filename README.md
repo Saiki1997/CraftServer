@@ -1,8 +1,8 @@
 # CraftServer
 
-From a modpack to a Minecraft server folder. Paste a Modrinth, CurseForge, FTB, Technic, ATLauncher, or GitHub pack link, or drop a `.mrpack` / `.zip`. CraftServer reads the Minecraft version and loader, picks a Java runtime, and downloads a folder you start on your own computer.
+From a modpack to a Minecraft client instance or a dedicated server folder. Paste a Modrinth, CurseForge, FTB, Technic, ATLauncher, or GitHub pack link, or drop a `.mrpack` / `.zip`. Craft reads the Minecraft version and loader, picks a Java runtime, and downloads a folder you start on your own computer.
 
-The Minecraft server does not run inside CraftServer. `install.ps1` and `start.bat` in the downloaded folder do that on Windows.
+**Play** keeps client mods. **Host** leaves client-only mods out of the server. Neither process runs inside the app. `install.ps1` in the downloaded folder does the downloads on Windows. Playing still needs a Microsoft account you own. The app does not collect one.
 
 ## Run from source
 

@@ -1,12 +1,13 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { recommendRam } from "./recommend.ts";
-import { STAGE_DEFS, type Activity, type AppSettings, type BackupSnap, type DownloadJob, type LogLine, type PackFile, type RuntimeRecord, type ServerRecord } from "./types.ts";
+import { STAGE_DEFS, type Activity, type AppSettings, type BackupSnap, type DownloadJob, type LogLine, type PackFile, type PlayRecord, type RuntimeRecord, type ServerRecord } from "./types.ts";
 
 type CraftState = {
   theme: "dark" | "light";
   settings: AppSettings;
   servers: ServerRecord[];
+  plays: PlayRecord[];
   jobs: DownloadJob[];
   activity: Activity[];
   runtimes: RuntimeRecord[];
@@ -15,6 +16,9 @@ type CraftState = {
   addServer: (server: ServerRecord) => void;
   updateServer: (id: string, patch: Partial<ServerRecord> | ((server: ServerRecord) => ServerRecord)) => void;
   removeServer: (id: string) => void;
+  addPlay: (play: PlayRecord) => void;
+  updatePlay: (id: string, patch: Partial<PlayRecord> | ((play: PlayRecord) => PlayRecord)) => void;
+  removePlay: (id: string) => void;
   upsertJob: (job: DownloadJob) => void;
   pushActivity: (text: string, serverId?: string) => void;
   addRuntime: (runtime: RuntimeRecord) => void;
@@ -29,6 +33,7 @@ export const useCraft = create<CraftState>()(
       theme: "dark",
       settings: defaultSettings,
       servers: [],
+      plays: [],
       jobs: [],
       activity: [],
       runtimes: [],
@@ -44,6 +49,16 @@ export const useCraft = create<CraftState>()(
           }),
         })),
       removeServer: (id) => set((s) => ({ servers: s.servers.filter((server) => server.id !== id) })),
+      addPlay: (play) => set((s) => ({ plays: [play, ...(s.plays ?? [])] })),
+      updatePlay: (id, patch) =>
+        set((s) => ({
+          plays: (s.plays ?? []).map((play) => {
+            if (play.id !== id) return play;
+            const next = typeof patch === "function" ? patch(play) : { ...play, ...patch };
+            return { ...next, updatedAt: Date.now() };
+          }),
+        })),
+      removePlay: (id) => set((s) => ({ plays: (s.plays ?? []).filter((play) => play.id !== id) })),
       upsertJob: (job) =>
         set((s) => {
           const rest = s.jobs.filter((item) => item.id !== job.id);
@@ -64,6 +79,7 @@ export const useCraft = create<CraftState>()(
         theme: s.theme,
         settings: s.settings,
         servers: s.servers,
+        plays: s.plays,
         jobs: s.jobs,
         activity: s.activity,
         runtimes: s.runtimes,

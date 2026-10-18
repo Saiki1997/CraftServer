@@ -13,7 +13,7 @@ export function DownloadsPage() {
       <h1 className="text-display">Downloads</h1>
       <p className="text-sm text-muted">Install stages retry without wiping stages that already succeeded. Pack files download later, on your computer, via install.ps1.</p>
       <a
-        href="https://github.com/Saiki1997/CraftServer/releases/download/v1.0.0/CraftServer-Windows.zip"
+        href="https://github.com/Saiki1997/CraftServer/releases/download/v1.1.0/CraftServer-Windows.zip"
         className="inline-flex h-11 w-fit items-center rounded-md bg-accent px-4 text-sm font-medium text-accent-foreground"
       >
         Windows app zip

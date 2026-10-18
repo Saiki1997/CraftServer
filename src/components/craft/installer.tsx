@@ -3,8 +3,9 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/field";
 import { inspectPackUrl, searchPacks } from "@/lib/mc/api";
-import { makeServer } from "@/lib/mc/factory";
+import { makePlay, makeServer } from "@/lib/mc/factory";
 import { runInstall } from "@/lib/mc/install";
+import { runPlayInstall } from "@/lib/mc/install-play";
 import { importLocalZip } from "@/lib/mc/local-zip";
 import { recommendRam } from "@/lib/mc/recommend";
 import { useCraft } from "@/lib/mc/store";
@@ -119,8 +120,18 @@ export function Installer({ heading = "page" }: { heading?: "home" | "page" }) {
       .catch((err) => setError(err instanceof Error ? err.message : "Search failed."));
   }
 
-  async function installPack(found: DetectedPack) {
+  async function installPack(found: DetectedPack, role: "play" | "host") {
     const ram = recommendRam(found.files, found.minecraftVersion);
+    if (role === "play") {
+      const play = makePlay(found, { name: name.trim() || found.name, ramMinMb: ramMin || ram.minMb, ramMaxMb: ramMax || ram.maxMb });
+      useCraft.getState().addPlay(play);
+      useCraft.getState().pushActivity(`Play instance ${play.name}`, play.id);
+      setLast(found);
+      setPhase("Opening the instance");
+      void runPlayInstall(play.id);
+      await navigate({ to: "/play/$playId", params: { playId: play.id } });
+      return;
+    }
     const server = makeServer(
       found,
       {
@@ -133,14 +144,14 @@ export function Installer({ heading = "page" }: { heading?: "home" | "page" }) {
       useCraft.getState().servers.map((s) => s.port),
     );
     useCraft.getState().addServer(server);
-    useCraft.getState().pushActivity(`Installed ${server.name}`, server.id);
+    useCraft.getState().pushActivity(`Hosted ${server.name}`, server.id);
     setLast(found);
     setPhase("Opening the server");
     void runInstall(server.id);
     await navigate({ to: "/servers/$serverId", params: { serverId: server.id } });
   }
 
-  async function installUrl(target: string) {
+  async function installUrl(target: string, role: "play" | "host") {
     const trimmed = target.trim();
     if (trimmed.length < 8) return;
     setUrl(trimmed);
@@ -148,13 +159,13 @@ export function Installer({ heading = "page" }: { heading?: "home" | "page" }) {
     setActiveUrl(trimmed);
     setBusy(true);
     setError("");
-    setPhase("Reading the modpack");
+    setPhase(role === "play" ? "Reading the pack for play" : "Reading the pack for a server");
     try {
       const found = await inspectPackUrl({
         data: { url: trimmed, curseforgeKey: settings.curseforgeKey, allowUnlisted: settings.allowUnlistedHosts },
       });
       setPhase("Choosing Java and the loader");
-      await installPack(found);
+      await installPack(found, role);
     } catch (err) {
       setPhase("");
       setActiveUrl("");
@@ -164,7 +175,7 @@ export function Installer({ heading = "page" }: { heading?: "home" | "page" }) {
     }
   }
 
-  async function installFile(file: File | undefined) {
+  async function installFile(file: File | undefined, role: "play" | "host") {
     if (!file) return;
     setBusy(true);
     setError("");
@@ -173,7 +184,7 @@ export function Installer({ heading = "page" }: { heading?: "home" | "page" }) {
     try {
       const found = await importLocalZip(file, settings.curseforgeKey);
       setPhase("Choosing Java and the loader");
-      await installPack(found);
+      await installPack(found, "host");
     } catch (err) {
       setPhase("");
       setActiveUrl("");
@@ -188,13 +199,13 @@ export function Installer({ heading = "page" }: { heading?: "home" | "page" }) {
       <div className="grid items-end gap-6 md:grid-cols-[1fr_240px]">
         <header>
           <img src="/mark.jpg" alt="" className="mb-4 h-36 w-full rounded-xl object-cover md:hidden" />
-          <p className="text-sm text-muted">{heading === "home" ? "CraftServer" : "New server"}</p>
-          <h1 className="mt-2 text-display">One click from a modpack to a server.</h1>
+          <p className="text-sm text-muted">{heading === "home" ? "Craft" : "New instance"}</p>
+          <h1 className="mt-2 text-display">Play a pack, or host it.</h1>
           <p className="mt-3 max-w-xl text-sm text-muted">
-            Paste a link or pick a pack. Filter by loader and Minecraft version, then install.
+            Same link for both. Play keeps client mods. Host builds a dedicated server and leaves client-only mods out.
           </p>
           <a
-            href="https://github.com/Saiki1997/CraftServer/releases/download/v1.0.0/CraftServer-Windows.zip"
+            href="https://github.com/Saiki1997/CraftServer/releases/download/v1.1.0/CraftServer-Windows.zip"
             className="mt-4 inline-flex h-11 items-center rounded-md bg-accent px-4 text-sm font-medium text-accent-foreground"
           >
             Download the Windows app
@@ -207,7 +218,7 @@ export function Installer({ heading = "page" }: { heading?: "home" | "page" }) {
         className="flex flex-col gap-2 sm:flex-row"
         onSubmit={(e) => {
           e.preventDefault();
-          void installUrl(url);
+          void installUrl(url, "host");
         }}
       >
         <div className="relative min-w-0 sm:flex-1">
@@ -226,8 +237,11 @@ export function Installer({ heading = "page" }: { heading?: "home" | "page" }) {
             </span>
           ) : null}
         </div>
-        <Button variant="primary" type="submit" disabled={busy || url.trim().length < 8} className="sm:min-w-36">
-          {busy && activeUrl === url.trim() ? "Installing…" : "Install"}
+        <Button type="button" disabled={busy || url.trim().length < 8} onClick={() => void installUrl(url, "play")}>
+          Play
+        </Button>
+        <Button variant="primary" type="submit" disabled={busy || url.trim().length < 8} className="sm:min-w-28">
+          {busy && activeUrl === url.trim() ? "Installing…" : "Host"}
         </Button>
       </form>
 
@@ -255,14 +269,14 @@ export function Installer({ heading = "page" }: { heading?: "home" | "page" }) {
         onDrop={(e) => {
           e.preventDefault();
           setDrag(false);
-          void installFile(e.dataTransfer.files[0]);
+          void installFile(e.dataTransfer.files[0], "host");
         }}
       >
-        <span className="text-muted">{drag ? "Drop the archive" : "Drop a .zip or .mrpack here"}</span>
+        <span className="text-muted">{drag ? "Drop the archive to host" : "Drop a .zip or .mrpack to host it. Client-only mods are left out."}</span>
         <div className="flex flex-wrap items-center gap-3">
           <label className="inline-flex h-11 cursor-pointer items-center rounded-md bg-secondary px-3">
             Choose a file
-            <input className="sr-only" type="file" accept=".zip,.mrpack,application/zip" onChange={(e) => void installFile(e.target.files?.[0])} />
+            <input className="sr-only" type="file" accept=".zip,.mrpack,application/zip" onChange={(e) => void installFile(e.target.files?.[0], "host")} />
           </label>
           <button type="button" className="h-11 text-muted underline-offset-2 hover:text-foreground hover:underline" onClick={() => setTune((v) => !v)}>
             {tune ? "Hide options" : "Name, port, and RAM"}
@@ -367,9 +381,12 @@ export function Installer({ heading = "page" }: { heading?: "home" | "page" }) {
                     <span className="mt-1 block text-sm text-muted">{pack.blurb}</span>
                   </span>
                 </button>
-                <div className="px-4 pb-4">
-                  <Button variant={armed ? "primary" : "secondary"} disabled={busy} onClick={() => void installUrl(pack.url)} className="w-full">
-                    {running ? "Installing…" : armed ? "Install this pack" : "Install"}
+                <div className="grid grid-cols-2 gap-2 px-4 pb-4">
+                  <Button disabled={busy} onClick={() => void installUrl(pack.url, "play")}>
+                    {running ? "Working…" : "Play"}
+                  </Button>
+                  <Button variant="primary" disabled={busy} onClick={() => void installUrl(pack.url, "host")}>
+                    Host
                   </Button>
                 </div>
               </article>
@@ -390,9 +407,10 @@ export function Installer({ heading = "page" }: { heading?: "home" | "page" }) {
                   <div className="line-clamp-2 text-sm text-muted">{hit.description}</div>
                 </div>
               </div>
-              <Button className="shrink-0" variant="primary" size="sm" disabled={busy} onClick={() => void installUrl(`https://modrinth.com/modpack/${hit.slug}`)}>
-                Install
-              </Button>
+              <div className="flex shrink-0 gap-2">
+                <Button size="sm" disabled={busy} onClick={() => void installUrl(`https://modrinth.com/modpack/${hit.slug}`, "play")}>Play</Button>
+                <Button size="sm" variant="primary" disabled={busy} onClick={() => void installUrl(`https://modrinth.com/modpack/${hit.slug}`, "host")}>Host</Button>
+              </div>
             </li>
           ))}
         </ul>
