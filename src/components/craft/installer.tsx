@@ -194,8 +194,7 @@ export function Installer({ heading = "page" }: { heading?: "home" | "page" }) {
             Paste a link or pick a pack. Filter by loader and Minecraft version, then install.
           </p>
           <a
-            href="/CraftServer-Windows.zip"
-            download="CraftServer-Windows.zip"
+            href="https://github.com/Saiki1997/CraftServer/releases/download/v1.0.0/CraftServer-Windows.zip"
             className="mt-4 inline-flex h-11 items-center rounded-md bg-accent px-4 text-sm font-medium text-accent-foreground"
           >
             Download the Windows app
